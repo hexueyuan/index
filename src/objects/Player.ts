@@ -8,15 +8,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly SPEED = 150;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'player');
+    super(scene, x, y, 'character', 0);
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setCollideWorldBounds(true);
-    this.setScale(2);
     this.cursors = scene.input.keyboard?.createCursorKeys();
     if (!this.cursors) {
       console.warn('Keyboard input not available, use virtual D-pad for controls.');
     }
+    this.play('idle');
   }
 
   pressVirtualKey(dir: Direction): void {
@@ -44,5 +44,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.setVelocity(vx, vy);
+
+    // Play direction-aware walk animation (avoid redundant play calls)
+    let animKey: string;
+    if (vx < 0) {
+      animKey = 'walk_left';
+    } else if (vx > 0) {
+      animKey = 'walk_right';
+    } else if (vy < 0) {
+      animKey = 'walk_up';
+    } else if (vy > 0) {
+      animKey = 'walk_down';
+    } else {
+      animKey = 'idle';
+    }
+
+    if (this.anims.currentAnim?.key !== animKey) {
+      this.play(animKey);
+    }
   }
 }
