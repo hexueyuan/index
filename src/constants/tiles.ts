@@ -5,60 +5,59 @@
  */
 
 // --- Grass & ground ---
-export const GRASS_1 = 0;          // row0 col0: plain grass
-export const GRASS_2 = 1;          // row0 col1: grass variant
-export const GRASS_3 = 2;          // row0 col2: grass variant
-export const GRASS_TALL = 3;       // row0 col3: tall grass / flowers
+export const GRASS_1 = 240;         // row6 col0: textured grass
+export const GRASS_2 = 241;         // row6 col1: bright grass variant
+export const GRASS_TALL = 323;      // row8 col3: bright green variant
 
-// --- Path / dirt ---
-export const PATH_H = 40;         // row1 col0: horizontal path
-export const PATH_V = 41;         // row1 col1: vertical path
-export const PATH_CENTER = 42;    // row1 col2: path center / crossroad
-export const PATH_TL = 80;        // row2 col0: path corner top-left
-export const PATH_TR = 81;        // row2 col1: path corner top-right
-export const PATH_BL = 82;        // row2 col2: path corner bottom-left
-export const PATH_BR = 83;        // row2 col3: path corner bottom-right
+// --- Path / dirt (yellow sand) ---
+export const PATH_H = 160;          // row4 col0: yellow sand path
+export const PATH_V = 171;          // row4 col11: sand variant
+export const PATH_CENTER = 170;     // row4 col10: sand crossroad
+export const PATH_TL = 171;         // path corner top-left
+export const PATH_TR = 171;         // path corner top-right
+export const PATH_BL = 171;         // path corner bottom-left
+export const PATH_BR = 171;         // path corner bottom-right
 
-// --- Trees ---
-export const TREE_TOP_LEFT = 4;    // row0 col4: tree canopy top-left
-export const TREE_TOP_RIGHT = 5;   // row0 col5: tree canopy top-right
-export const TREE_BOT_LEFT = 44;   // row1 col4: tree trunk bottom-left
-export const TREE_BOT_RIGHT = 45;  // row1 col5: tree trunk bottom-right
+// --- Trees (2x2, textured dark-green tiles with visible contrast against grass) ---
+export const TREE_TOP_LEFT = 320;   // row8 col0: dark canopy with gray/black detail
+export const TREE_TOP_RIGHT = 321;  // row8 col1: dark canopy variant
+export const TREE_BOT_LEFT = 440;   // row11 col0: tree base with black/gray texture
+export const TREE_BOT_RIGHT = 441;  // row11 col1: tree base variant
 
-// --- Water ---
-export const WATER_1 = 160;       // row4 col0: water tile
-export const WATER_2 = 161;       // row4 col1: water variant
-export const WATER_TL = 120;      // row3 col0: water edge top-left
-export const WATER_TR = 121;      // row3 col1: water edge top-right
-export const WATER_BL = 200;      // row5 col0: water edge bottom-left
-export const WATER_BR = 201;      // row5 col1: water edge bottom-right
-export const WATER_T = 122;       // row3 col2: water edge top
-export const WATER_B = 202;       // row5 col2: water edge bottom
-export const WATER_L = 162;       // row4 col2: water edge left
-export const WATER_R = 163;       // row4 col3: water edge right
+// --- Water (teal) ---
+export const WATER_1 = 284;         // row7 col4: teal water
+export const WATER_2 = 364;         // row9 col4: lighter teal water
+export const WATER_TL = 284;        // water edge top-left
+export const WATER_TR = 284;        // water edge top-right
+export const WATER_BL = 284;        // water edge bottom-left
+export const WATER_BR = 284;        // water edge bottom-right
+export const WATER_T = 284;         // water edge top
+export const WATER_B = 284;         // water edge bottom
+export const WATER_L = 284;         // water edge left
+export const WATER_R = 284;         // water edge right
 
-// --- Houses ---
-export const HOUSE_TL = 6;        // row0 col6: house top-left
-export const HOUSE_TC = 7;        // row0 col7: house top-center
-export const HOUSE_TR = 8;        // row0 col8: house top-right
-export const HOUSE_ML = 46;       // row1 col6: house middle-left
-export const HOUSE_MC = 47;       // row1 col7: house middle-center (door area)
-export const HOUSE_MR = 48;       // row1 col8: house middle-right
-export const HOUSE_BL = 86;       // row2 col6: house bottom-left
-export const HOUSE_BC = 87;       // row2 col7: house bottom-center (door)
-export const HOUSE_BR = 88;       // row2 col8: house bottom-right
+// --- Houses (red roof + dark gray walls) ---
+export const HOUSE_TL = 87;         // row2 col7: red roof left
+export const HOUSE_TC = 87;         // row2 col7: red roof center
+export const HOUSE_TR = 88;         // row2 col8: red roof right
+export const HOUSE_ML = 17;         // row0 col17: dark gray wall left
+export const HOUSE_MC = 17;         // row0 col17: dark gray wall center
+export const HOUSE_MR = 18;         // row0 col18: dark gray wall right
+export const HOUSE_BL = 96;         // row2 col16: dark base left
+export const HOUSE_BC = 57;         // row1 col17: black (door)
+export const HOUSE_BR = 99;         // row2 col19: dark base right
 
-// --- Fence ---
-export const FENCE_H = 9;         // row0 col9: horizontal fence
-export const FENCE_V = 49;        // row1 col9: vertical fence
-export const FENCE_TL = 10;       // row0 col10: fence corner top-left
-export const FENCE_TR = 11;       // row0 col11: fence corner top-right
-export const FENCE_BL = 50;       // row1 col10: fence corner bottom-left
-export const FENCE_BR = 51;       // row1 col11: fence corner bottom-right
+// --- Fence (brown) ---
+export const FENCE_H = 287;         // row7 col7: dark brown
+export const FENCE_V = 291;         // row7 col11: medium brown
+export const FENCE_TL = 287;        // fence corner top-left
+export const FENCE_TR = 287;        // fence corner top-right
+export const FENCE_BL = 287;        // fence corner bottom-left
+export const FENCE_BR = 287;        // fence corner bottom-right
 
-// --- Flowers / decorations ---
-export const FLOWER_1 = 12;       // row0 col12: flower patch
-export const FLOWER_2 = 13;       // row0 col13: flower variant
+// --- Flowers / decorations (purple) ---
+export const FLOWER_1 = 252;        // row6 col12: lavender
+export const FLOWER_2 = 253;        // row6 col13: lavender variant
 
 // --- Collidable tile indices (player cannot walk through these) ---
 export const COLLIDABLE_TILES: number[] = [
