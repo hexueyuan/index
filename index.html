@@ -55,17 +55,17 @@
   <body>
     <!-- Virtual D-Pad for mobile/touch controls -->
     <div id="dpad">
-      <button id="btn-up">&#9650;</button>
-      <button id="btn-left">&#9664;</button>
-      <button id="btn-down">&#9660;</button>
-      <button id="btn-right">&#9654;</button>
+      <button id="btn-up" aria-label="Move up">&#9650;</button>
+      <button id="btn-left" aria-label="Move left">&#9664;</button>
+      <button id="btn-down" aria-label="Move down">&#9660;</button>
+      <button id="btn-right" aria-label="Move right">&#9654;</button>
     </div>
 
     <script type="module" src="/src/main.ts"></script>
 
     <script>
       window.addEventListener('load', function() {
-        var bindings = [
+        const bindings = [
           ['btn-up', 'up'],
           ['btn-down', 'down'],
           ['btn-left', 'left'],
@@ -73,9 +73,9 @@
         ];
 
         bindings.forEach(function(binding) {
-          var id = binding[0];
-          var dir = binding[1];
-          var btn = document.getElementById(id);
+          const id = binding[0];
+          const dir = binding[1];
+          const btn = document.getElementById(id);
 
           if (!btn) return;
 

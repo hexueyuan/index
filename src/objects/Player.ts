@@ -14,6 +14,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setScale(2);
     this.cursors = scene.input.keyboard?.createCursorKeys();
+    if (!this.cursors) {
+      console.warn('Keyboard input not available, use virtual D-pad for controls.');
+    }
   }
 
   pressVirtualKey(dir: Direction): void {

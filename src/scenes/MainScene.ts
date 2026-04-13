@@ -2,6 +2,17 @@ import Phaser from 'phaser';
 import { Player, Direction } from '../objects/Player';
 import { TileType, TILE_TEXTURES } from '../constants/tiles';
 
+export interface GameInput {
+  pressKey: (dir: string) => void;
+  releaseKey: (dir: string) => void;
+}
+
+declare global {
+  interface Window {
+    __gameInput?: GameInput;
+  }
+}
+
 export class MainScene extends Phaser.Scene {
   private player!: Player;
   private readonly TILE_SIZE = 16;
@@ -29,8 +40,7 @@ export class MainScene extends Phaser.Scene {
 
     this.player = new Player(this, worldWidth / 2, worldHeight / 2 - 64);
 
-    // Expose a minimal control interface for the virtual D-pad
-    (window as unknown as { __gameInput: GameInput }).__gameInput = {
+    window.__gameInput = {
       pressKey: (dir) => this.player.pressVirtualKey(dir as Direction),
       releaseKey: (dir) => this.player.releaseVirtualKey(dir as Direction),
     };
@@ -168,5 +178,3 @@ export class MainScene extends Phaser.Scene {
     this.player.update();
   }
 }
-
-type GameInput = { pressKey: (dir: string) => void; releaseKey: (dir: string) => void };
