@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import { Player, Direction } from '../objects/Player';
-import { TileType, TILE_TEXTURES } from '../constants/tiles';
+import { COLLIDABLE_TILES } from '../constants/tiles';
+import { VILLAGE_MAP } from '../maps/villageMap';
 
 export interface GameInput {
-  pressKey: (dir: string) => void;
-  releaseKey: (dir: string) => void;
+  pressKey: (dir: Direction) => void;
+  releaseKey: (dir: Direction) => void;
 }
 
 declare global {
@@ -15,163 +16,91 @@ declare global {
 
 export class MainScene extends Phaser.Scene {
   private player!: Player;
+  private mapLayer!: Phaser.Tilemaps.TilemapLayer;
+
   private readonly TILE_SIZE = 16;
-  private readonly SCALE = 2;
-  private readonly DISPLAY_TILE_SIZE = this.TILE_SIZE * this.SCALE;
-  private readonly MAP_WIDTH = 25;
-  private readonly MAP_HEIGHT = 19;
 
   constructor() {
     super({ key: 'MainScene' });
   }
 
-  preload(): void {}
+  preload(): void {
+    const ts = this.TILE_SIZE;
+    this.load.spritesheet('tileset', 'assets/images/PokemonLike.png', {
+      frameWidth: ts,
+      frameHeight: ts,
+    });
+    this.load.spritesheet('character', 'assets/sprites/character.png', {
+      frameWidth: ts,
+      frameHeight: ts,
+    });
+  }
 
   create(): void {
-    this.generateTileTextures();
-    this.generatePlayerTexture();
+    // Create tilemap from 2D array data
+    const map = this.make.tilemap({
+      data: VILLAGE_MAP,
+      tileWidth: this.TILE_SIZE,
+      tileHeight: this.TILE_SIZE,
+    });
 
-    const mapData = this.createMapData();
-    this.renderMap(mapData);
+    // Add the tileset image - first param is tileset name, second is cache key
+    const tileset = map.addTilesetImage('tileset', 'tileset');
+    if (!tileset) {
+      console.error('Failed to add tileset image');
+      return;
+    }
 
-    const worldWidth = this.MAP_WIDTH * this.DISPLAY_TILE_SIZE;
-    const worldHeight = this.MAP_HEIGHT * this.DISPLAY_TILE_SIZE;
-    this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+    // Create the map layer
+    const layer = map.createLayer(0, tileset, 0, 0);
+    if (!layer) {
+      console.error('Failed to create map layer');
+      return;
+    }
+    this.mapLayer = layer;
 
-    this.player = new Player(this, worldWidth / 2, worldHeight / 2 - 64);
+    // Set collision on obstacle tiles
+    this.mapLayer.setCollision(COLLIDABLE_TILES);
 
+    const mapPixelWidth = VILLAGE_MAP[0].length * this.TILE_SIZE;
+    const mapPixelHeight = VILLAGE_MAP.length * this.TILE_SIZE;
+
+    // Set world bounds to original pixel size
+    this.physics.world.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
+
+    // Create character animations from spritesheet (4 cols x 5 rows)
+    const animDefs = [
+      { key: 'idle', start: 0, end: 3, frameRate: 4 },
+      { key: 'walk_down', start: 4, end: 7, frameRate: 8 },
+      { key: 'walk_up', start: 8, end: 11, frameRate: 8 },
+      { key: 'walk_left', start: 12, end: 15, frameRate: 8 },
+      { key: 'walk_right', start: 16, end: 19, frameRate: 8 },
+    ];
+    for (const def of animDefs) {
+      this.anims.create({
+        key: def.key,
+        frames: this.anims.generateFrameNumbers('character', { start: def.start, end: def.end }),
+        frameRate: def.frameRate,
+        repeat: -1,
+      });
+    }
+
+    // Create player at center of map
+    this.player = new Player(this, mapPixelWidth / 2, mapPixelHeight / 2 - 64);
+
+    // Add collision between player and map layer
+    this.physics.add.collider(this.player, this.mapLayer);
+
+    // Set up camera with zoom instead of scale
+    this.cameras.main.setZoom(2);
+    this.cameras.main.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
+    this.cameras.main.startFollow(this.player);
+
+    // Expose virtual input for mobile D-pad
     window.__gameInput = {
-      pressKey: (dir) => this.player.pressVirtualKey(dir as Direction),
-      releaseKey: (dir) => this.player.releaseVirtualKey(dir as Direction),
+      pressKey: (dir) => this.player.pressVirtualKey(dir),
+      releaseKey: (dir) => this.player.releaseVirtualKey(dir),
     };
-  }
-
-  private generateTileTextures(): void {
-    const graphics = this.add.graphics();
-
-    graphics.fillStyle(0x4a7c59);
-    graphics.fillRect(0, 0, this.TILE_SIZE, this.TILE_SIZE);
-    graphics.fillStyle(0x6aab79);
-    graphics.fillRect(0, 0, this.TILE_SIZE, 3);
-    graphics.fillStyle(0x5a8c69);
-    graphics.fillRect(2, 4, 2, 2);
-    graphics.fillRect(10, 6, 2, 2);
-    graphics.fillRect(6, 10, 2, 2);
-    graphics.generateTexture('tile_ground', this.TILE_SIZE, this.TILE_SIZE);
-    graphics.clear();
-
-    graphics.fillStyle(0x2d4a2f);
-    graphics.fillRect(0, 0, this.TILE_SIZE, this.TILE_SIZE);
-    graphics.fillStyle(0x3d5a3f);
-    graphics.fillRect(1, 1, 6, 6);
-    graphics.fillRect(9, 9, 6, 6);
-    graphics.fillStyle(0x1d3a1f);
-    graphics.fillRect(8, 1, 7, 7);
-    graphics.fillRect(1, 8, 7, 7);
-    graphics.generateTexture('tile_border', this.TILE_SIZE, this.TILE_SIZE);
-    graphics.clear();
-
-    graphics.fillStyle(0x87ceeb);
-    graphics.fillRect(0, 0, this.TILE_SIZE, this.TILE_SIZE);
-    graphics.fillStyle(0x9dd8ef);
-    graphics.fillRect(0, 0, this.TILE_SIZE, 4);
-    graphics.generateTexture('tile_air', this.TILE_SIZE, this.TILE_SIZE);
-
-    graphics.destroy();
-  }
-
-  private generatePlayerTexture(): void {
-    const graphics = this.add.graphics();
-
-    graphics.fillStyle(0x4488ff);
-    graphics.fillRect(0, 0, this.TILE_SIZE, this.TILE_SIZE);
-    graphics.fillStyle(0x2266cc);
-    graphics.fillRect(0, 0, this.TILE_SIZE, 1);
-    graphics.fillRect(0, 0, 1, this.TILE_SIZE);
-    graphics.fillRect(this.TILE_SIZE - 1, 0, 1, this.TILE_SIZE);
-    graphics.fillRect(0, this.TILE_SIZE - 1, this.TILE_SIZE, 1);
-    graphics.fillStyle(0x66aaff);
-    graphics.fillRect(3, 3, 4, 4);
-    graphics.fillRect(9, 3, 4, 4);
-    graphics.fillStyle(0x000033);
-    graphics.fillRect(4, 4, 2, 2);
-    graphics.fillRect(10, 4, 2, 2);
-    graphics.fillStyle(0x003366);
-    graphics.fillRect(5, 10, 6, 1);
-    graphics.fillRect(4, 9, 1, 1);
-    graphics.fillRect(11, 9, 1, 1);
-
-    graphics.generateTexture('player', this.TILE_SIZE, this.TILE_SIZE);
-    graphics.destroy();
-  }
-
-  private createMapData(): number[][] {
-    const map: number[][] = [];
-
-    for (let y = 0; y < this.MAP_HEIGHT; y++) {
-      const row: number[] = [];
-      for (let x = 0; x < this.MAP_WIDTH; x++) {
-        const isTopBorder = y === 0;
-        const isBottomBorder = y === this.MAP_HEIGHT - 1;
-        const isLeftBorder = x === 0;
-        const isRightBorder = x === this.MAP_WIDTH - 1;
-        const isGround = y >= this.MAP_HEIGHT - 4;
-
-        if (isTopBorder || isLeftBorder || isRightBorder || isBottomBorder) {
-          row.push(TileType.Border);
-        } else if (isGround) {
-          row.push(y === this.MAP_HEIGHT - 4 ? TileType.Ground : TileType.Border);
-        } else {
-          row.push(TileType.Air);
-        }
-      }
-      map.push(row);
-    }
-
-    this.addTerrainFeatures(map);
-    return map;
-  }
-
-  private addTerrainFeatures(map: number[][]): void {
-    for (let x = 3; x <= 7; x++) {
-      map[10][x] = TileType.Ground;
-      map[11][x] = TileType.Border;
-    }
-
-    for (let x = 17; x <= 22; x++) {
-      map[8][x] = TileType.Ground;
-      map[9][x] = TileType.Border;
-    }
-
-    map[this.MAP_HEIGHT - 5][11] = TileType.Ground;
-    map[this.MAP_HEIGHT - 5][12] = TileType.Ground;
-    map[this.MAP_HEIGHT - 5][13] = TileType.Ground;
-    map[this.MAP_HEIGHT - 6][12] = TileType.Ground;
-
-    for (let y = this.MAP_HEIGHT - 7; y < this.MAP_HEIGHT - 4; y++) {
-      map[y][3] = TileType.Border;
-    }
-    map[this.MAP_HEIGHT - 8][3] = TileType.Ground;
-    map[this.MAP_HEIGHT - 7][2] = TileType.Ground;
-    map[this.MAP_HEIGHT - 7][4] = TileType.Ground;
-
-    for (let y = this.MAP_HEIGHT - 7; y < this.MAP_HEIGHT - 4; y++) {
-      map[y][21] = TileType.Border;
-    }
-    map[this.MAP_HEIGHT - 8][21] = TileType.Ground;
-    map[this.MAP_HEIGHT - 7][20] = TileType.Ground;
-    map[this.MAP_HEIGHT - 7][22] = TileType.Ground;
-  }
-
-  private renderMap(mapData: number[][]): void {
-    for (let y = 0; y < mapData.length; y++) {
-      for (let x = 0; x < mapData[y].length; x++) {
-        const textureKey = TILE_TEXTURES[mapData[y][x]] ?? 'tile_air';
-        const posX = x * this.DISPLAY_TILE_SIZE + this.DISPLAY_TILE_SIZE / 2;
-        const posY = y * this.DISPLAY_TILE_SIZE + this.DISPLAY_TILE_SIZE / 2;
-        this.add.image(posX, posY, textureKey).setScale(this.SCALE);
-      }
-    }
   }
 
   update(): void {
