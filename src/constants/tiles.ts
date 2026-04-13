@@ -5,55 +5,55 @@
  */
 
 // --- Grass & ground ---
-export const GRASS_1 = 240;         // row6 col0: textured grass
-export const GRASS_2 = 241;         // row6 col1: bright grass variant
+export const GRASS_1 = 1;           // row0 col1: solid green (0,129,0) with subtle specks
+export const GRASS_2 = 2;           // row0 col2: solid green (0,129,0) with subtle specks variant
 export const GRASS_TALL = 323;      // row8 col3: bright green variant
 
 // --- Path / dirt (yellow sand) ---
-export const PATH_H = 160;          // row4 col0: yellow sand path
-export const PATH_V = 171;          // row4 col11: sand variant
+export const PATH_H = 160;          // row4 col0: horizontal yellow sand path
+export const PATH_V = 200;          // row5 col0: vertical yellow sand path
 export const PATH_CENTER = 170;     // row4 col10: sand crossroad
 export const PATH_TL = 171;         // path corner top-left
 export const PATH_TR = 171;         // path corner top-right
 export const PATH_BL = 171;         // path corner bottom-left
 export const PATH_BR = 171;         // path corner bottom-right
 
-// --- Trees (2x2, textured dark-green tiles with visible contrast against grass) ---
-export const TREE_TOP_LEFT = 320;   // row8 col0: dark canopy with gray/black detail
-export const TREE_TOP_RIGHT = 321;  // row8 col1: dark canopy variant
-export const TREE_BOT_LEFT = 440;   // row11 col0: tree base with black/gray texture
-export const TREE_BOT_RIGHT = 441;  // row11 col1: tree base variant
+// --- Trees (uniform dense forest tile for seamless border) ---
+export const TREE_TOP_LEFT = 80;    // row2 col0: dark green dense forest
+export const TREE_TOP_RIGHT = 80;   // row2 col0: same tile for seamless tiling
+export const TREE_BOT_LEFT = 80;    // row2 col0: same tile for seamless tiling
+export const TREE_BOT_RIGHT = 80;   // row2 col0: same tile for seamless tiling
 
 // --- Water (teal) ---
-export const WATER_1 = 284;         // row7 col4: teal water
+export const WATER_1 = 284;         // row7 col4: darker teal water
 export const WATER_2 = 364;         // row9 col4: lighter teal water
-export const WATER_TL = 284;        // water edge top-left
-export const WATER_TR = 284;        // water edge top-right
-export const WATER_BL = 284;        // water edge bottom-left
-export const WATER_BR = 284;        // water edge bottom-right
-export const WATER_T = 284;         // water edge top
-export const WATER_B = 284;         // water edge bottom
-export const WATER_L = 284;         // water edge left
-export const WATER_R = 284;         // water edge right
+export const WATER_TL = 284;        // water edge top-left (darker)
+export const WATER_TR = 284;        // water edge top-right (darker)
+export const WATER_BL = 364;        // water edge bottom-left (lighter, reflection)
+export const WATER_BR = 364;        // water edge bottom-right (lighter, reflection)
+export const WATER_T = 284;         // water edge top (darker)
+export const WATER_B = 364;         // water edge bottom (lighter, reflection)
+export const WATER_L = 284;         // water edge left (darker)
+export const WATER_R = 284;         // water edge right (darker)
 
-// --- Houses (red roof + dark gray walls) ---
+// --- Houses (red roof + gray stone walls) ---
 export const HOUSE_TL = 87;         // row2 col7: red roof left
 export const HOUSE_TC = 87;         // row2 col7: red roof center
 export const HOUSE_TR = 88;         // row2 col8: red roof right
-export const HOUSE_ML = 17;         // row0 col17: dark gray wall left
-export const HOUSE_MC = 17;         // row0 col17: dark gray wall center
-export const HOUSE_MR = 18;         // row0 col18: dark gray wall right
-export const HOUSE_BL = 96;         // row2 col16: dark base left
-export const HOUSE_BC = 57;         // row1 col17: black (door)
-export const HOUSE_BR = 99;         // row2 col19: dark base right
+export const HOUSE_ML = 480;        // row12 col0: gray stone wall
+export const HOUSE_MC = 480;        // row12 col0: gray stone wall
+export const HOUSE_MR = 480;        // row12 col0: gray stone wall
+export const HOUSE_BL = 560;        // row14 col0: darker gray base
+export const HOUSE_BC = 295;        // row7 col15: reddish-brown door
+export const HOUSE_BR = 560;        // row14 col0: darker gray base
 
 // --- Fence (brown) ---
-export const FENCE_H = 287;         // row7 col7: dark brown
-export const FENCE_V = 291;         // row7 col11: medium brown
-export const FENCE_TL = 287;        // fence corner top-left
-export const FENCE_TR = 287;        // fence corner top-right
-export const FENCE_BL = 287;        // fence corner bottom-left
-export const FENCE_BR = 287;        // fence corner bottom-right
+export const FENCE_H = 287;         // row7 col7: dark brown horizontal
+export const FENCE_V = 291;         // row7 col11: medium brown vertical
+export const FENCE_TL = 287;        // fence corner top-left (H-dominant)
+export const FENCE_TR = 291;        // fence corner top-right (V-dominant)
+export const FENCE_BL = 291;        // fence corner bottom-left (V-dominant)
+export const FENCE_BR = 287;        // fence corner bottom-right (H-dominant)
 
 // --- Flowers / decorations (purple) ---
 export const FLOWER_1 = 252;        // row6 col12: lavender
