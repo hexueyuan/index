@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phaser3 Game</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #000;
+      }
+      /* Virtual D-Pad Styles */
+      #dpad {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: grid;
+        grid-template-areas:
+          ". up ."
+          "left . right"
+          ". down .";
+        grid-template-columns: repeat(3, 48px);
+        grid-template-rows: repeat(3, 48px);
+        gap: 4px;
+        z-index: 100;
+      }
+      #btn-up { grid-area: up; }
+      #btn-left { grid-area: left; }
+      #btn-down { grid-area: down; }
+      #btn-right { grid-area: right; }
+      #dpad button {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 8px;
+        font-size: 20px;
+        cursor: pointer;
+        user-select: none;
+        touch-action: none;
+        color: #fff;
+      }
+      #dpad button:active {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Virtual D-Pad for mobile/touch controls -->
+    <div id="dpad">
+      <button id="btn-up" aria-label="Move up">&#9650;</button>
+      <button id="btn-left" aria-label="Move left">&#9664;</button>
+      <button id="btn-down" aria-label="Move down">&#9660;</button>
+      <button id="btn-right" aria-label="Move right">&#9654;</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+
+    <script>
+      window.addEventListener('load', function() {
+        const bindings = [
+          ['btn-up', 'up'],
+          ['btn-down', 'down'],
+          ['btn-left', 'left'],
+          ['btn-right', 'right']
+        ];
+
+        bindings.forEach(function(binding) {
+          const id = binding[0];
+          const dir = binding[1];
+          const btn = document.getElementById(id);
+
+          if (!btn) return;
+
+          btn.addEventListener('pointerdown', function(e) {
+            e.preventDefault();
+            if (window.__gameInput) window.__gameInput.pressKey(dir);
+          });
+
+          ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(evt) {
+            btn.addEventListener(evt, function(e) {
+              e.preventDefault();
+              if (window.__gameInput) window.__gameInput.releaseKey(dir);
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
