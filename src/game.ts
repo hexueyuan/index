@@ -6,10 +6,18 @@ import { MainScene } from './scenes/MainScene';
  */
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: 960,
+  height: 540,
   backgroundColor: '#87ceeb',
   pixelArt: true,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    max: {
+      width: 960,
+      height: 540,
+    },
+  },
   physics: {
     default: 'arcade',
     arcade: {
