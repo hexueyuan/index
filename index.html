@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <title>Phaser3 Game</title>
     <style>
@@ -83,9 +86,33 @@
       #btn-action:active {
         background: rgba(255, 255, 255, 0.5);
       }
+      /* Fullscreen overlay */
+      #fullscreen-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: #fff;
+        font-family: 'Press Start 2P', cursive;
+        text-align: center;
+        cursor: pointer;
+      }
+      #fullscreen-overlay.show { display: flex; }
+      #fullscreen-overlay .title { font-size: 14px; margin-bottom: 20px; line-height: 1.8; }
+      #fullscreen-overlay .hint { font-size: 10px; color: #aaa; line-height: 1.6; }
     </style>
   </head>
   <body>
+    <!-- Fullscreen overlay for mobile -->
+    <div id="fullscreen-overlay">
+      <div class="title">点击屏幕开始游戏</div>
+      <div class="hint">Tap to Start</div>
+    </div>
+
     <!-- Virtual A Button for mobile/touch controls -->
     <button id="btn-action" aria-label="Action">A</button>
 
@@ -102,6 +129,24 @@
     <script>
       // 全局禁止 contextmenu（防止 Safari 长按弹出菜单）
       document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+      // 移动端全屏处理
+      (function() {
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        var overlay = document.getElementById('fullscreen-overlay');
+        if (isMobile && overlay) {
+          overlay.classList.add('show');
+          overlay.addEventListener('pointerdown', function() {
+            overlay.classList.remove('show');
+            // 尝试请求全屏（Android Chrome 支持，iOS Safari 不支持）
+            var el = document.documentElement;
+            var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+            if (rfs) {
+              rfs.call(el).catch(function() {});
+            }
+          }, { once: true });
+        }
+      })();
 
       window.addEventListener('load', function() {
         // A Button binding
