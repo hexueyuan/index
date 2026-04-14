@@ -18,16 +18,9 @@ export class MainScene extends Phaser.Scene {
   private player!: Player;
   private mapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
   private dialogBox!: DialogBox;
+  private interactiveObjects: { x: number; y: number; dialog: DialogLine[] }[] = [];
 
   private readonly TILE_SIZE = 16;
-
-  private readonly testDialog: DialogLine[] = [
-    { speaker: '老村民', role: 'npc', text: '你好，欢迎来到 Southland！' },
-    { speaker: '勇者', role: 'player', text: '谢谢！这个村庄看起来很宁静。' },
-    { speaker: '老村民', role: 'npc', text: '是啊，不过最近村长好像有些烦心事……' },
-    { speaker: '勇者', role: 'player', text: '发生了什么事吗？' },
-    { speaker: '老村民', role: 'npc', text: '你要是感兴趣，可以去找村长聊聊。' },
-  ];
 
   constructor() {
     super({ key: 'MainScene' });
@@ -57,14 +50,16 @@ export class MainScene extends Phaser.Scene {
       return;
     }
 
-    // Create all tile layers from the Tiled map
+    // Create all tile layers and enable collision via per-tile property
+    // Layers named "above" (or inside an "above" group) render on top of the player.
+    const aboveLayers: Phaser.Tilemaps.TilemapLayer[] = [];
     for (const layerData of map.layers) {
       const layer = map.createLayer(layerData.name, tileset, 0, 0);
       if (layer) {
         this.mapLayers.push(layer);
-        // Set collision on all non-empty tiles in the collision layer
-        if (layerData.name === 'collision') {
-          layer.setCollisionByExclusion([-1, 0]);
+        layer.setCollisionByProperty({ collides: true });
+        if (layerData.name.startsWith('above')) {
+          aboveLayers.push(layer);
         }
       }
     }
@@ -95,9 +90,33 @@ export class MainScene extends Phaser.Scene {
     // Create player at center of map
     this.player = new Player(this, mapPixelWidth / 2, mapPixelHeight / 2 - 64);
 
+    // Render "above" layers on top of the player (e.g. rooftops, tree canopies)
+    this.player.setDepth(10);
+    for (const layer of aboveLayers) {
+      layer.setDepth(20);
+    }
+
     // Add collision between player and all map layers
     for (const layer of this.mapLayers) {
       this.physics.add.collider(this.player, layer);
+    }
+
+    // Parse interactive objects from Tiled object layer
+    const objectLayer = map.getObjectLayer('interactions');
+    if (objectLayer) {
+      for (const obj of objectLayer.objects) {
+        const type = obj.type;  // "class" in Tiled 1.9+ maps to obj.type in Phaser
+        const textProp = obj.properties?.find(
+          (p: { name: string; value: unknown }) => p.name === 'text'
+        );
+        if (type === 'sign' && textProp) {
+          this.interactiveObjects.push({
+            x: obj.x!,
+            y: obj.y!,
+            dialog: [{ speaker: obj.name || '告示牌', role: 'npc', text: String(textProp.value) }],
+          });
+        }
+      }
     }
 
     // Set up camera with zoom
@@ -109,7 +128,7 @@ export class MainScene extends Phaser.Scene {
     window.__gameInput = {
       pressKey: (dir) => this.player.pressVirtualKey(dir),
       releaseKey: (dir) => this.player.releaseVirtualKey(dir),
-      pressAction: () => this.triggerDialog(),
+      pressAction: () => this.handleAction(),
     };
 
     // Create dialog box
@@ -119,23 +138,46 @@ export class MainScene extends Phaser.Scene {
       () => this.player.unlock()
     );
 
-    // Keyboard input: Space/Enter to trigger or advance dialog
+    // Keyboard input: Space/Enter/A to interact or advance dialog
     const spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     const enterKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    const handleKey = () => {
-      if (this.dialogBox.isActive) {
-        this.dialogBox.advance();
-      } else {
-        this.triggerDialog();
-      }
-    };
+    const aKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    const handleKey = () => this.handleAction();
     spaceKey?.on('down', handleKey);
     enterKey?.on('down', handleKey);
+    aKey?.on('down', handleKey);
   }
 
-  private triggerDialog(): void {
+  private handleAction(): void {
+    if (this.dialogBox.isActive) {
+      this.dialogBox.advance();
+    } else {
+      this.tryInteract();
+    }
+  }
+
+  private tryInteract(): void {
     if (this.dialogBox.isActive) return;
-    this.dialogBox.show(this.testDialog);
+
+    // Compute the point the player is facing
+    const ts = this.TILE_SIZE;
+    let targetX = this.player.x;
+    let targetY = this.player.y;
+    switch (this.player.facing) {
+      case 'up':    targetY -= ts; break;
+      case 'down':  targetY += ts; break;
+      case 'left':  targetX -= ts; break;
+      case 'right': targetX += ts; break;
+    }
+
+    // Check if any interactive object is near the target point
+    for (const obj of this.interactiveObjects) {
+      const dist = Phaser.Math.Distance.Between(targetX, targetY, obj.x, obj.y);
+      if (dist <= ts) {
+        this.dialogBox.show(obj.dialog);
+        return;
+      }
+    }
   }
 
   update(): void {

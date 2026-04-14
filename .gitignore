@@ -1,4 +1,6 @@
 .devpipe/worktrees/
+.devpipe/state/
 node_modules
 tiled.tiled-session
 tiled.tiled-project
+dist/

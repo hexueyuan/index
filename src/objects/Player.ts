@@ -7,6 +7,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private virtualKeys = { up: false, down: false, left: false, right: false };
   private readonly SPEED = 150;
   private _locked: boolean = false;
+  private _facing: Direction = 'down';
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'character', 0);
@@ -42,6 +43,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this._locked;
   }
 
+  get facing(): Direction {
+    return this._facing;
+  }
+
   update(): void {
     if (this._locked) {
       return;
@@ -68,12 +73,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     let animKey: string;
     if (vx < 0) {
       animKey = 'walk_left';
+      this._facing = 'left';
     } else if (vx > 0) {
       animKey = 'walk_right';
+      this._facing = 'right';
     } else if (vy < 0) {
       animKey = 'walk_up';
+      this._facing = 'up';
     } else if (vy > 0) {
       animKey = 'walk_down';
+      this._facing = 'down';
     } else {
       animKey = 'idle';
     }
