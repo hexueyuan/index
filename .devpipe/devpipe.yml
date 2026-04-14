@@ -1,0 +1,10 @@
+# DevPipe 项目配置
+
+# 文档存放目录（相对于仓库根目录，也支持绝对路径）
+# 默认为 .devpipe/docs/，每次开发迭代会在该目录下创建子目录存放产出文档
+docs_dir: docs/devpipe
+
+# 声明 Docker 容器需要映射的端口
+ports:
+  - 5173  # vite dev server
+  - 4173  # vite preview
