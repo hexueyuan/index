@@ -134,6 +134,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   private triggerDialog(): void {
+    if (this.dialogBox.isActive) return;
     this.dialogBox.show(this.testDialog);
   }
 

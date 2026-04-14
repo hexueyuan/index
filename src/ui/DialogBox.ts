@@ -94,9 +94,6 @@ export class DialogBox extends Phaser.GameObjects.Container {
     this.drawIndicator();
     this.add(this.indicator);
 
-    // Pointer input for mobile tap-to-advance
-    scene.input.on('pointerdown', this.handleInput);
-
     // Start hidden
     this.setVisible(false);
   }
@@ -127,6 +124,7 @@ export class DialogBox extends Phaser.GameObjects.Container {
     this.dialog = dialog;
     this.currentPageIndex = 0;
     this.setVisible(true);
+    this.scene.input.on('pointerdown', this.handleInput);
     this.onOpen?.();
     this.showCurrentPage();
   }
@@ -218,6 +216,7 @@ export class DialogBox extends Phaser.GameObjects.Container {
     this.setVisible(false);
     this.stopTyping();
     this.stopIndicatorBlink();
+    this.scene.input.off('pointerdown', this.handleInput);
     this.onClose?.();
   }
 
