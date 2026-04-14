@@ -18,18 +18,14 @@ const COLORS = {
   backgroundAlpha: 0.8,
 };
 
-// Positions in game units for 2x zoom (visible area = 400x300)
-const LAYOUT = {
-  boxX: 0,
-  boxY: 210,
-  boxWidth: 400,
+// Fixed style constants (layout is computed dynamically based on camera zoom)
+const STYLE = {
   boxHeight: 90,
   padX: 16,
   nameOffsetY: 8,
   textOffsetY: 26,
   fontSize: '16px',
   fontFamily: '"Press Start 2P", "Courier New", monospace',
-  wrapWidth: 368,
   cornerRadius: 4,
 };
 
@@ -42,6 +38,11 @@ export class DialogBox {
   private nameText: Phaser.GameObjects.Text;
   private contentText: Phaser.GameObjects.Text;
   private indicator: Phaser.GameObjects.Graphics;
+
+  // Computed layout positions (derived from camera zoom in constructor)
+  private boxX: number = 0;
+  private boxY: number = 0;
+  private boxWidth: number = 400;
 
   private dialogState: DialogState = 'IDLE';
   private dialog: DialogLine[] = [];
@@ -67,6 +68,22 @@ export class DialogBox {
 
     const depth = 1000;
 
+    // Compute visible area for scrollFactor(0) objects under camera zoom.
+    // With zoom, coordinates are scaled from the canvas center, so (0,0) is NOT top-left.
+    // Formula: screenPos = (gamePos - canvasCenter) * zoom + canvasCenter
+    // Visible top-left in game coords = canvasCenter * (1 - 1/zoom)
+    const cam = scene.cameras.main;
+    const zoom = cam.zoom;
+    const visX = (cam.width / 2) * (1 - 1 / zoom);
+    const visY = (cam.height / 2) * (1 - 1 / zoom);
+    const visW = cam.width / zoom;
+    const visH = cam.height / zoom;
+
+    this.boxX = visX;
+    this.boxY = visY + visH - STYLE.boxHeight;
+    this.boxWidth = visW;
+    const wrapWidth = visW - STYLE.padX * 2;
+
     // Background
     this.background = scene.add.graphics();
     this.background.setScrollFactor(0);
@@ -75,12 +92,12 @@ export class DialogBox {
 
     // Name text
     this.nameText = scene.add.text(
-      LAYOUT.boxX + LAYOUT.padX,
-      LAYOUT.boxY + LAYOUT.nameOffsetY,
+      this.boxX + STYLE.padX,
+      this.boxY + STYLE.nameOffsetY,
       '',
       {
-        fontFamily: LAYOUT.fontFamily,
-        fontSize: LAYOUT.fontSize,
+        fontFamily: STYLE.fontFamily,
+        fontSize: STYLE.fontSize,
         color: COLORS.player,
       }
     );
@@ -90,14 +107,14 @@ export class DialogBox {
 
     // Content text
     this.contentText = scene.add.text(
-      LAYOUT.boxX + LAYOUT.padX,
-      LAYOUT.boxY + LAYOUT.textOffsetY,
+      this.boxX + STYLE.padX,
+      this.boxY + STYLE.textOffsetY,
       '',
       {
-        fontFamily: LAYOUT.fontFamily,
-        fontSize: LAYOUT.fontSize,
+        fontFamily: STYLE.fontFamily,
+        fontSize: STYLE.fontSize,
         color: COLORS.text,
-        wordWrap: { width: LAYOUT.wrapWidth * 2 },
+        wordWrap: { width: wrapWidth * 2 },
       }
     );
     this.contentText.setScrollFactor(0);
@@ -118,17 +135,17 @@ export class DialogBox {
     this.background.clear();
     this.background.fillStyle(COLORS.background, COLORS.backgroundAlpha);
     this.background.fillRoundedRect(
-      LAYOUT.boxX,
-      LAYOUT.boxY,
-      LAYOUT.boxWidth,
-      LAYOUT.boxHeight,
-      LAYOUT.cornerRadius
+      this.boxX,
+      this.boxY,
+      this.boxWidth,
+      STYLE.boxHeight,
+      STYLE.cornerRadius
     );
   }
 
   private drawIndicator(): void {
-    const x = LAYOUT.boxX + LAYOUT.boxWidth - 16;
-    const y = LAYOUT.boxY + LAYOUT.boxHeight - 12;
+    const x = this.boxX + this.boxWidth - 16;
+    const y = this.boxY + STYLE.boxHeight - 12;
     this.indicator.clear();
     this.indicator.fillStyle(0xffffff, 1);
     this.indicator.fillTriangle(x, y, x + 8, y, x + 4, y + 6);
