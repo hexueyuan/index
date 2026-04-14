@@ -1,1 +1,4 @@
 .devpipe/worktrees/
+node_modules
+tiled.tiled-session
+tiled.tiled-project

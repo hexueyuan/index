@@ -1,7 +1,5 @@
 import Phaser from 'phaser';
 import { Player, Direction } from '../objects/Player';
-import { COLLIDABLE_TILES } from '../constants/tiles';
-import { VILLAGE_MAP } from '../maps/villageMap';
 
 export interface GameInput {
   pressKey: (dir: Direction) => void;
@@ -16,7 +14,7 @@ declare global {
 
 export class MainScene extends Phaser.Scene {
   private player!: Player;
-  private mapLayer!: Phaser.Tilemaps.TilemapLayer;
+  private mapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private readonly TILE_SIZE = 16;
 
@@ -26,10 +24,11 @@ export class MainScene extends Phaser.Scene {
 
   preload(): void {
     const ts = this.TILE_SIZE;
-    this.load.spritesheet('tileset', 'assets/images/PokemonLike.png', {
-      frameWidth: ts,
-      frameHeight: ts,
-    });
+    // Load Tiled JSON map
+    this.load.tilemapTiledJSON('village', 'assets/maps/village.tmj');
+    // Load tileset image
+    this.load.image('PokemonLike', 'assets/images/PokemonLike.png');
+    // Load character spritesheet
     this.load.spritesheet('character', 'assets/sprites/character.png', {
       frameWidth: ts,
       frameHeight: ts,
@@ -37,35 +36,32 @@ export class MainScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Create tilemap from 2D array data
-    const map = this.make.tilemap({
-      data: VILLAGE_MAP,
-      tileWidth: this.TILE_SIZE,
-      tileHeight: this.TILE_SIZE,
-    });
+    // Create tilemap from Tiled JSON
+    const map = this.make.tilemap({ key: 'village' });
 
-    // Add the tileset image - first param is tileset name, second is cache key
-    const tileset = map.addTilesetImage('tileset', 'tileset');
+    // Add tileset - first param must match the tileset name in Tiled
+    const tileset = map.addTilesetImage('PokemonLike', 'PokemonLike');
     if (!tileset) {
       console.error('Failed to add tileset image');
       return;
     }
 
-    // Create the map layer
-    const layer = map.createLayer(0, tileset, 0, 0);
-    if (!layer) {
-      console.error('Failed to create map layer');
-      return;
+    // Create all tile layers from the Tiled map
+    for (const layerData of map.layers) {
+      const layer = map.createLayer(layerData.name, tileset, 0, 0);
+      if (layer) {
+        this.mapLayers.push(layer);
+        // Set collision on all non-empty tiles in the collision layer
+        if (layerData.name === 'collision') {
+          layer.setCollisionByExclusion([-1, 0]);
+        }
+      }
     }
-    this.mapLayer = layer;
 
-    // Set collision on obstacle tiles
-    this.mapLayer.setCollision(COLLIDABLE_TILES);
+    const mapPixelWidth = map.widthInPixels;
+    const mapPixelHeight = map.heightInPixels;
 
-    const mapPixelWidth = VILLAGE_MAP[0].length * this.TILE_SIZE;
-    const mapPixelHeight = VILLAGE_MAP.length * this.TILE_SIZE;
-
-    // Set world bounds to original pixel size
+    // Set world bounds
     this.physics.world.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
 
     // Create character animations from spritesheet (4 cols x 5 rows)
@@ -88,10 +84,12 @@ export class MainScene extends Phaser.Scene {
     // Create player at center of map
     this.player = new Player(this, mapPixelWidth / 2, mapPixelHeight / 2 - 64);
 
-    // Add collision between player and map layer
-    this.physics.add.collider(this.player, this.mapLayer);
+    // Add collision between player and all map layers
+    for (const layer of this.mapLayers) {
+      this.physics.add.collider(this.player, layer);
+    }
 
-    // Set up camera with zoom instead of scale
+    // Set up camera with zoom
     this.cameras.main.setZoom(2);
     this.cameras.main.setBounds(0, 0, mapPixelWidth, mapPixelHeight);
     this.cameras.main.startFollow(this.player);
