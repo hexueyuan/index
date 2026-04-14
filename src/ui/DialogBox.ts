@@ -18,16 +18,17 @@ const COLORS = {
   backgroundAlpha: 0.8,
 };
 
+// Positions in game units for 2x zoom (visible area = 400x300)
 const LAYOUT = {
   boxX: 0,
   boxY: 210,
   boxWidth: 400,
   boxHeight: 90,
-  nameX: 16,
-  nameY: 218,
-  textX: 16,
-  textY: 236,
-  fontSize: 8,
+  padX: 16,
+  nameOffsetY: 8,
+  textOffsetY: 26,
+  fontSize: '16px',
+  fontFamily: '"Press Start 2P", "Courier New", monospace',
   wrapWidth: 368,
   cornerRadius: 4,
 };
@@ -35,7 +36,8 @@ const LAYOUT = {
 const TYPING_DELAY = 50;
 const INDICATOR_BLINK_RATE = 500;
 
-export class DialogBox extends Phaser.GameObjects.Container {
+export class DialogBox {
+  private scene: Phaser.Scene;
   private background: Phaser.GameObjects.Graphics;
   private nameText: Phaser.GameObjects.Text;
   private contentText: Phaser.GameObjects.Text;
@@ -59,40 +61,54 @@ export class DialogBox extends Phaser.GameObjects.Container {
     onOpen?: () => void,
     onClose?: () => void
   ) {
-    super(scene, 0, 0);
+    this.scene = scene;
     this.onOpen = onOpen;
     this.onClose = onClose;
 
-    scene.add.existing(this as Phaser.GameObjects.Container);
-    this.setScrollFactor(0);
-    this.setDepth(1000);
+    const depth = 1000;
 
     // Background
     this.background = scene.add.graphics();
+    this.background.setScrollFactor(0);
+    this.background.setDepth(depth);
     this.drawBackground();
-    this.add(this.background);
 
     // Name text
-    this.nameText = scene.add.text(LAYOUT.nameX, LAYOUT.nameY, '', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: `${LAYOUT.fontSize}px`,
-      color: COLORS.player,
-    });
-    this.add(this.nameText);
+    this.nameText = scene.add.text(
+      LAYOUT.boxX + LAYOUT.padX,
+      LAYOUT.boxY + LAYOUT.nameOffsetY,
+      '',
+      {
+        fontFamily: LAYOUT.fontFamily,
+        fontSize: LAYOUT.fontSize,
+        color: COLORS.player,
+      }
+    );
+    this.nameText.setScrollFactor(0);
+    this.nameText.setDepth(depth + 1);
+    this.nameText.setScale(0.5);
 
     // Content text
-    this.contentText = scene.add.text(LAYOUT.textX, LAYOUT.textY, '', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: `${LAYOUT.fontSize}px`,
-      color: COLORS.text,
-      wordWrap: { width: LAYOUT.wrapWidth },
-    });
-    this.add(this.contentText);
+    this.contentText = scene.add.text(
+      LAYOUT.boxX + LAYOUT.padX,
+      LAYOUT.boxY + LAYOUT.textOffsetY,
+      '',
+      {
+        fontFamily: LAYOUT.fontFamily,
+        fontSize: LAYOUT.fontSize,
+        color: COLORS.text,
+        wordWrap: { width: LAYOUT.wrapWidth * 2 },
+      }
+    );
+    this.contentText.setScrollFactor(0);
+    this.contentText.setDepth(depth + 1);
+    this.contentText.setScale(0.5);
 
     // Page indicator (triangle)
     this.indicator = scene.add.graphics();
+    this.indicator.setScrollFactor(0);
+    this.indicator.setDepth(depth + 1);
     this.drawIndicator();
-    this.add(this.indicator);
 
     // Start hidden
     this.setVisible(false);
@@ -116,6 +132,13 @@ export class DialogBox extends Phaser.GameObjects.Container {
     this.indicator.clear();
     this.indicator.fillStyle(0xffffff, 1);
     this.indicator.fillTriangle(x, y, x + 8, y, x + 4, y + 6);
+  }
+
+  private setVisible(visible: boolean): void {
+    this.background.setVisible(visible);
+    this.nameText.setVisible(visible);
+    this.contentText.setVisible(visible);
+    this.indicator.setVisible(visible);
   }
 
   show(dialog: DialogLine[]): void {
@@ -198,7 +221,6 @@ export class DialogBox extends Phaser.GameObjects.Container {
 
   advance(): void {
     if (this.dialogState === 'TYPING') {
-      // Skip animation
       this.completeTyping();
     } else if (this.dialogState === 'PAGE_COMPLETE') {
       this.stopIndicatorBlink();
@@ -230,10 +252,13 @@ export class DialogBox extends Phaser.GameObjects.Container {
     return this.dialogState !== 'IDLE';
   }
 
-  destroy(fromScene?: boolean): void {
+  destroy(): void {
     this.stopTyping();
     this.stopIndicatorBlink();
     this.scene?.input?.off('pointerdown', this.handleInput);
-    super.destroy(fromScene);
+    this.background.destroy();
+    this.nameText.destroy();
+    this.contentText.destroy();
+    this.indicator.destroy();
   }
 }
