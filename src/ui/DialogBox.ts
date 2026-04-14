@@ -99,6 +99,7 @@ export class DialogBox {
         fontFamily: STYLE.fontFamily,
         fontSize: STYLE.fontSize,
         color: COLORS.player,
+        padding: { bottom: 6 },
       }
     );
     this.nameText.setScrollFactor(0);
@@ -115,6 +116,7 @@ export class DialogBox {
         fontSize: STYLE.fontSize,
         color: COLORS.text,
         wordWrap: { width: wrapWidth * 2 },
+        padding: { bottom: 6 },
       }
     );
     this.contentText.setScrollFactor(0);
