@@ -8,3 +8,10 @@ docs_dir: docs/devpipe
 ports:
   - 5173  # vite dev server
   - 4173  # vite preview
+
+# 额外挂载（宿主机 worktree 路径 -> 容器工作空间路径，双向同步）
+# 支持格式：
+#   - public          # 挂载到容器同路径
+#   - src/assets:dist/assets  # host:container 映射到不同路径
+mounts:
+  - public
