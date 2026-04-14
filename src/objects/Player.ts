@@ -6,6 +6,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private virtualKeys = { up: false, down: false, left: false, right: false };
   private readonly SPEED = 150;
+  private _locked: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'character', 0);
@@ -27,7 +28,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.virtualKeys[dir] = false;
   }
 
+  lock(): void {
+    this._locked = true;
+    this.setVelocity(0, 0);
+    this.play('idle');
+  }
+
+  unlock(): void {
+    this._locked = false;
+  }
+
+  get locked(): boolean {
+    return this._locked;
+  }
+
   update(): void {
+    if (this._locked) {
+      return;
+    }
+
     let vx = 0;
     let vy = 0;
 
