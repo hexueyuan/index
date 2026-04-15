@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Player, Direction } from '../objects/Player';
 import { DialogBox, DialogLine } from '../ui/DialogBox';
+import { InspectPanel, InspectContent } from '../ui/InspectPanel';
 
 export interface GameInput {
   pressKey: (dir: Direction) => void;
@@ -18,7 +19,8 @@ export class MainScene extends Phaser.Scene {
   private player!: Player;
   private mapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
   private dialogBox!: DialogBox;
-  private interactiveObjects: { x: number; y: number; dialog: DialogLine[] }[] = [];
+  private inspectPanel!: InspectPanel;
+  private interactiveObjects: { x: number; y: number; dialog?: DialogLine[]; inspect?: InspectContent }[] = [];
 
   private readonly TILE_SIZE = 16;
 
@@ -113,7 +115,7 @@ export class MainScene extends Phaser.Scene {
           this.interactiveObjects.push({
             x: obj.x!,
             y: obj.y!,
-            dialog: [{ speaker: obj.name || '告示牌', role: 'npc', text: String(textProp.value) }],
+            inspect: { type: 'sign', title: obj.name || '告示牌', text: String(textProp.value) },
           });
         }
       }
@@ -138,6 +140,13 @@ export class MainScene extends Phaser.Scene {
       () => this.player.unlock()
     );
 
+    // Create inspect panel
+    this.inspectPanel = new InspectPanel(
+      this,
+      () => this.player.lock(),
+      () => this.player.unlock()
+    );
+
     // Keyboard input: Space/Enter/A to interact or advance dialog
     const spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     const enterKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
@@ -151,6 +160,8 @@ export class MainScene extends Phaser.Scene {
   private handleAction(): void {
     if (this.dialogBox.isActive) {
       this.dialogBox.advance();
+    } else if (this.inspectPanel.isActive) {
+      this.inspectPanel.close();
     } else {
       this.tryInteract();
     }
@@ -158,6 +169,7 @@ export class MainScene extends Phaser.Scene {
 
   private tryInteract(): void {
     if (this.dialogBox.isActive) return;
+    if (this.inspectPanel.isActive) return;
 
     // Compute the point the player is facing
     const ts = this.TILE_SIZE;
@@ -174,7 +186,11 @@ export class MainScene extends Phaser.Scene {
     for (const obj of this.interactiveObjects) {
       const dist = Phaser.Math.Distance.Between(targetX, targetY, obj.x, obj.y);
       if (dist <= ts) {
-        this.dialogBox.show(obj.dialog);
+        if (obj.inspect) {
+          this.inspectPanel.show(obj.inspect);
+        } else if (obj.dialog) {
+          this.dialogBox.show(obj.dialog);
+        }
         return;
       }
     }
