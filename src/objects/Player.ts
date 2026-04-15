@@ -13,6 +13,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, 'character', 0);
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
+    // Shrink collision body to 10x10 (from default 16x16) so the player
+    // can pass through 1-tile-wide corridors with 3px tolerance per side.
+    // Offset places the hitbox at the sprite's feet.
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.setSize(10, 10);
+    body.setOffset(3, 6);
+
     this.setCollideWorldBounds(true);
     this.cursors = scene.input.keyboard?.createCursorKeys();
     if (!this.cursors) {
