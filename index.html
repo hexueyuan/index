@@ -16,6 +16,7 @@
       html, body {
         width: 100%;
         height: 100%;
+        height: 100dvh;
         overflow: hidden;
         background-color: #000;
         /* 全局禁止长按菜单和文字选择 */
@@ -153,7 +154,9 @@
             var el = document.documentElement;
             var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
             if (rfs) {
-              rfs.call(el).catch(function() {});
+              rfs.call(el).then(function() {
+                setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 100);
+              }).catch(function() {});
             }
           }, { once: true });
         }
