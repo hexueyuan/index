@@ -31,7 +31,7 @@
       #dpad {
         position: fixed;
         bottom: 20px;
-        right: 20px;
+        left: 20px;
         display: grid;
         grid-template-areas:
           ". up ."
@@ -63,11 +63,10 @@
       #dpad button:active {
         background: rgba(255, 255, 255, 0.5);
       }
-      /* Virtual A Button Styles */
-      #btn-action {
+      /* Virtual A/B Button Styles */
+      #btn-action,
+      #btn-cancel {
         position: fixed;
-        bottom: 68px;
-        left: 20px;
         width: 56px;
         height: 56px;
         background: rgba(255, 255, 255, 0.3);
@@ -83,7 +82,16 @@
         touch-action: none;
         z-index: 100;
       }
-      #btn-action:active {
+      #btn-action {
+        bottom: 80px;
+        right: 20px;
+      }
+      #btn-cancel {
+        bottom: 20px;
+        right: 76px;
+      }
+      #btn-action:active,
+      #btn-cancel:active {
         background: rgba(255, 255, 255, 0.5);
       }
       /* Fullscreen overlay */
@@ -115,6 +123,9 @@
 
     <!-- Virtual A Button for mobile/touch controls -->
     <button id="btn-action" aria-label="Action">A</button>
+
+    <!-- Virtual B Button for mobile/touch controls -->
+    <button id="btn-cancel" aria-label="Cancel">B</button>
 
     <!-- Virtual D-Pad for mobile/touch controls -->
     <div id="dpad">
@@ -156,6 +167,17 @@
             e.preventDefault();
             if (window.__gameInput && window.__gameInput.pressAction) {
               window.__gameInput.pressAction();
+            }
+          });
+        }
+
+        // B Button binding
+        const cancelBtn = document.getElementById('btn-cancel');
+        if (cancelBtn) {
+          cancelBtn.addEventListener('pointerdown', function(e) {
+            e.preventDefault();
+            if (window.__gameInput && window.__gameInput.pressCancel) {
+              window.__gameInput.pressCancel();
             }
           });
         }

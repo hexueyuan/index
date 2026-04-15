@@ -7,6 +7,7 @@ export interface GameInput {
   pressKey: (dir: Direction) => void;
   releaseKey: (dir: Direction) => void;
   pressAction: () => void;
+  pressCancel: () => void;
 }
 
 declare global {
@@ -131,6 +132,7 @@ export class MainScene extends Phaser.Scene {
       pressKey: (dir) => this.player.pressVirtualKey(dir),
       releaseKey: (dir) => this.player.releaseVirtualKey(dir),
       pressAction: () => this.handleAction(),
+      pressCancel: () => this.handleCancel(),
     };
 
     // Create dialog box
@@ -151,10 +153,12 @@ export class MainScene extends Phaser.Scene {
     const spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     const enterKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     const aKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    const escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
     const handleKey = () => this.handleAction();
     spaceKey?.on('down', handleKey);
     enterKey?.on('down', handleKey);
     aKey?.on('down', handleKey);
+    escKey?.on('down', () => this.handleCancel());
   }
 
   private handleAction(): void {
@@ -164,6 +168,14 @@ export class MainScene extends Phaser.Scene {
       this.inspectPanel.close();
     } else {
       this.tryInteract();
+    }
+  }
+
+  private handleCancel(): void {
+    if (this.dialogBox.isActive) {
+      this.dialogBox.close();
+    } else if (this.inspectPanel.isActive) {
+      this.inspectPanel.close();
     }
   }
 

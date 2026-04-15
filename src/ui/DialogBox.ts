@@ -252,7 +252,7 @@ export class DialogBox {
     }
   }
 
-  private close(): void {
+  close(): void {
     this.dialogState = 'IDLE';
     this.setVisible(false);
     this.stopTyping();
