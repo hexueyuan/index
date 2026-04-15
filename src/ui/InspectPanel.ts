@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 export interface InspectContent {
+  // TODO: 根据 type 切换面板风格（photo/diary/item）
   type: 'sign' | 'photo' | 'diary' | 'item';
   title?: string;
   text?: string;
@@ -144,11 +145,16 @@ export class InspectPanel {
   }
 
   show(content: InspectContent): void {
+    if (this.visible) return;
     this.titleText.setText(content.title ?? '');
     this.contentText.setText(content.text ?? '');
     this.setVisible(true);
     this.visible = true;
-    this.scene.input.on('pointerdown', this.handleClose);
+    // Delay event registration by one frame to prevent the triggering interaction
+    // from immediately closing the panel
+    this.scene.time.delayedCall(0, () => {
+      this.scene.input.on('pointerdown', this.handleClose);
+    });
     this.onOpen?.();
   }
 
