@@ -86,23 +86,70 @@
 
 ---
 
-### Step 3：告示牌与可交互道具
+### Step 3：展示面板（InspectPanel）与交互类型分离
 
-**目标**：在村庄各处放置可交互的道具，开始呈现个人信息。
+**目标**：将"对话"和"查看/阅读"两种交互类型分离，构建独立的展示面板组件。
 
-**说明**：有了 Step 1 + 2 的基础，添加一个新的可交互物体只需要在 Tiled 里画矩形、填属性、保存即可，不需要改代码。
+**为什么要做这一步**：当前告示牌复用了 `DialogBox`（对话系统），但告示牌、照片、日记等本质是"阅读/展示"而非"对话"。两者在语义、视觉风格和交互方式上都有差异，混用会导致后续扩展困难。
 
-**计划放置的道具**：
+#### 交互类型划分
 
-| 道具 | 位置 | 内容 |
-|------|------|------|
-| 村口告示牌 | 村庄入口附近 | "欢迎来到 Southland！这里是村长 HXY 的领地。" |
-| 信箱 | 村长家门口 | 联系方式 / 邮箱 |
-| 花园石碑 | 花园区域 | 喜欢的一句话 / 座右铭 |
-| 公告栏 | 村庄广场 | 自我介绍 / 近况更新 |
-| 池塘边的石头 | 池塘旁 | 一段随想或感悟 |
+| 类型 | 组件 | 场景 | UI 特征 |
+|------|------|------|---------|
+| **Dialog（对话）** | `DialogBox` | NPC | 说话者名字 + 角色颜色、打字机效果、多轮翻页 |
+| **Inspect（查看）** | `InspectPanel` | 告示牌、照片、日记、道具 | 无说话者、标题+正文、可按类型定制样式 |
 
-**修改文件**：`public/assets/maps/village.tmj`（仅 Tiled 编辑）
+#### 具体任务
+
+1. **新建 `src/ui/InspectPanel.ts`**
+   - 数据结构：
+     ```ts
+     interface InspectContent {
+       type: 'sign' | 'photo' | 'diary' | 'item';  // 后续可扩展
+       title?: string;        // 如 "村口告示牌"
+       text?: string;         // 文字内容（告示牌/日记）
+       image?: string;        // 图片资源 key（照片/道具）
+     }
+     ```
+   - 告示牌：屏幕中央面板，标题 + 正文，直接显示全文，按键关闭
+   - 照片：展示图片，可附带标题/描述
+   - 日记：多页翻页浏览（复用翻页逻辑，但样式独立于对话框）
+   - 共用 `player.lock/unlock` 逻辑
+
+2. **视觉风格差异化**
+   - `DialogBox`（对话）：屏幕底部、半透明黑底、逐字显示 → 保持不变
+   - `InspectPanel`（告示牌）：屏幕中央、羊皮纸/木板风格背景、直接显示全文
+   - `InspectPanel`（照片/日记）：较大面板或全屏、带关闭按钮
+
+3. **改造 `MainScene` 交互层**
+   - `interactiveObjects` 数据结构扩展：
+     ```ts
+     interface InteractiveObject {
+       x: number;
+       y: number;
+       dialog?: DialogLine[];       // NPC 对话 → 走 DialogBox
+       inspect?: InspectContent;    // 查看/展示 → 走 InspectPanel
+     }
+     ```
+   - `tryInteract` 根据 `dialog` / `inspect` 字段分流到不同组件
+   - 告示牌解析从生成 `dialog` 改为生成 `inspect`
+
+4. **Tiled 地图侧**
+   - 无需改动。已有的 `type` 字段（`sign`）天然区分类型
+   - 后续新增 `photo`、`diary`、`item` 等 type，解析时分流到 `inspect`
+
+#### 计划放置的可交互道具
+
+| 道具 | 位置 | type | 内容 |
+|------|------|------|------|
+| 村口告示牌 | 村庄入口附近 | sign | "欢迎来到 Southland！这里是村长 HXY 的领地。" |
+| 信箱 | 村长家门口 | item | 联系方式 / 邮箱 |
+| 花园石碑 | 花园区域 | sign | 喜欢的一句话 / 座右铭 |
+| 公告栏 | 村庄广场 | sign | 自我介绍 / 近况更新 |
+| 池塘边的石头 | 池塘旁 | sign | 一段随想或感悟 |
+
+**新增文件**：`src/ui/InspectPanel.ts`
+**修改文件**：`src/scenes/MainScene.ts`、`public/assets/maps/village.tmj`
 
 ---
 
@@ -191,7 +238,7 @@
 - 床 / 桌面物品 → 揭示性格的趣味描述
 
 **图书馆/档案室**：
-- 日记系统 — 多页翻阅 UI，展示工作经历时间线
+- 日记系统 — 通过 `InspectPanel`（type: diary）多页翻阅，展示工作经历时间线
   - 教育经历
   - 工作经验条目
   - 重点项目总结
@@ -220,7 +267,7 @@
 - 粒子效果（水面波纹、花瓣飘落）
 - 动态 tile（水面波动、花朵摇摆）
 
-**新增文件**：`src/ui/DiaryReader.ts`、`src/data/diaries.ts`、`src/data/easter_eggs.ts`
+**新增文件**：`src/data/diaries.ts`、`src/data/easter_eggs.ts`
 
 ---
 
@@ -237,8 +284,8 @@ src/
     NPC.ts                 # NPC 角色
     InteractionZone.ts     # 不可见的交互触发区域
   ui/
-    DialogBox.ts           # 对话显示组件
-    DiaryReader.ts         # 多页文档阅读器
+    DialogBox.ts           # NPC 对话组件（屏幕底部、打字机效果）
+    InspectPanel.ts        # 查看/展示组件（告示牌、照片、日记、道具）
     InteractionPrompt.ts   # "按 E 交互" 浮动提示
   data/
     dialogs.ts             # 所有 NPC/告示牌的对话内容
@@ -273,7 +320,7 @@ public/assets/
 ```
 Step 1（对话系统）        →  世界能"说话"了
 Step 2（交互机制）        →  世界能被"触碰"了
-Step 3（告示牌与道具）    →  内容开始呈现了
+Step 3（展示面板与道具）    →  对话与展示分离，内容开始呈现了
 Step 4（场景切换）        →  世界变得丰富了（有室内）
 Step 5（NPC 系统）        →  世界有"人"了
 Step 6（内容与彩蛋）      →  故事有了灵魂
@@ -287,7 +334,7 @@ Step 6（内容与彩蛋）      →  故事有了灵魂
 |------|-----------|------|
 | Step 1 对话系统 | TypeScript + Phaser UI | 中等 |
 | Step 2 交互机制 | Tiled 对象层 + 代码读取 | 中等 |
-| Step 3 告示牌与道具 | Tiled 画矩形 + 填属性 | 低 |
+| Step 3 展示面板与道具 | InspectPanel 组件 + 交互分流 | 中等 |
 | Step 4 场景切换 | Tiled 建新地图 + Phaser 场景管理 | 中等 |
 | Step 5 NPC 系统 | 精灵图 + 对话数据管理 | 中等 |
 | Step 6 内容与彩蛋 | 创意 + 重复利用以上机制 | 低 |

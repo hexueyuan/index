@@ -1,0 +1,41 @@
+{
+  "stage": "done",
+  "stage_completed": false,
+  "dev_type": "Bugfix",
+  "description": "手机端未屏幕未占满",
+  "github_issue": "13",
+  "github_issue_title": "手机端未屏幕未占满",
+  "github_issue_body": "方向键和AB键换位置之后手机端的屏幕被缩小了，屏幕的上下左右都有黑边。正常应该保持16:9的比例然后尽可能把屏幕占满",
+  "github_issue_url": "https://github.com/hexueyuan/index/issues/13",
+  "github_repo": "hexueyuan/index",
+  "remote_branch": "main",
+  "local_branch": "fix-mobile-screen-fill",
+  "container_name": "fix-mobile-screen-fill",
+  "repo_root": "/Users/hexueyuan/Workroot/src/github.com/hexueyuan/index",
+  "worktree_path": "/Users/hexueyuan/Workroot/src/github.com/hexueyuan/index/.devpipe/worktrees/fix-mobile-screen-fill",
+  "docs_path": "/Users/hexueyuan/Workroot/src/github.com/hexueyuan/index/docs/devpipe/20260415-13-fix-mobile-screen-fill",
+  "created_at": "2026-04-15T23:09:02+08:00",
+  "stage_timestamps": {
+    "init": {
+      "started_at": "2026-04-15T23:09:02+08:00",
+      "ended_at": "2026-04-15T23:09:02+08:00"
+    },
+    "design": {
+      "started_at": "2026-04-15T15:09:29+00:00",
+      "ended_at": "2026-04-15T15:23:30+00:00"
+    },
+    "coding": {
+      "started_at": "2026-04-15T15:23:38+00:00",
+      "ended_at": "2026-04-15T15:26:17+00:00"
+    },
+    "review-and-fix": {
+      "started_at": "2026-04-15T15:26:28+00:00",
+      "ended_at": "2026-04-15T15:41:16+00:00"
+    },
+    "summarize": {
+      "started_at": "2026-04-15T15:41:16+00:00",
+      "ended_at": "2026-04-15T15:42:28+00:00"
+    }
+  },
+  "summary": "手机端屏幕显示未占满"
+}

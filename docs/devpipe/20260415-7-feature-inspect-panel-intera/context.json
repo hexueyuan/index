@@ -1,0 +1,45 @@
+{
+  "stage": "done",
+  "stage_completed": false,
+  "dev_type": "新功能",
+  "description": "展示面板（InspectPanel）与交互类型分离",
+  "github_issue": "7",
+  "github_issue_title": "展示面板（InspectPanel）与交互类型分离",
+  "github_issue_body": "### Step 3：展示面板（InspectPanel）与交互类型分离\n\n**目标**：将\"对话\"和\"查看/阅读\"两种交互类型分离，构建独立的展示面板组件。\n\n**为什么要做这一步**：当前告示牌复用了 `DialogBox`（对话系统），但告示牌、照片、日记等本质是\"阅读/展示\"而非\"对话\"。两者在语义、视觉风格和交互方式上都有差异，混用会导致后续扩展困难。\n\n#### 交互类型划分\n\n| 类型 | 组件 | 场景 | UI 特征 |\n|------|------|------|---------|\n| **Dialog（对话）** | `DialogBox` | NPC | 说话者名字 + 角色颜色、打字机效果、多轮翻页 |\n| **Inspect（查看）** | `InspectPanel` | 告示牌、照片、日记、道具 | 无说话者、标题+正文、可按类型定制样式 |\n\n#### 具体任务\n\n1. **新建 `src/ui/InspectPanel.ts`**\n   - 数据结构：\n     ```ts\n     interface InspectContent {\n       type: 'sign' | 'photo' | 'diary' | 'item';  // 后续可扩展\n       title?: string;        // 如 \"村口告示牌\"\n       text?: string;         // 文字内容（告示牌/日记）\n       image?: string;        // 图片资源 key（照片/道具）\n     }\n     ```\n   - 告示牌：屏幕中央面板，标题 + 正文，直接显示全文，按键关闭\n   - 照片：展示图片，可附带标题/描述\n   - 日记：多页翻页浏览（复用翻页逻辑，但样式独立于对话框）\n   - 共用 `player.lock/unlock` 逻辑\n\n2. **视觉风格差异化**\n   - `DialogBox`（对话）：屏幕底部、半透明黑底、逐字显示 → 保持不变\n   - `InspectPanel`（告示牌）：屏幕中央、羊皮纸/木板风格背景、直接显示全文\n   - `InspectPanel`（照片/日记）：较大面板或全屏、带关闭按钮\n\n3. **改造 `MainScene` 交互层**\n   - `interactiveObjects` 数据结构扩展：\n     ```ts\n     interface InteractiveObject {\n       x: number;\n       y: number;\n       dialog?: DialogLine[];       // NPC 对话 → 走 DialogBox\n       inspect?: InspectContent;    // 查看/展示 → 走 InspectPanel\n     }\n     ```\n   - `tryInteract` 根据 `dialog` / `inspect` 字段分流到不同组件\n   - 告示牌解析从生成 `dialog` 改为生成 `inspect`\n\n4. **Tiled 地图侧**\n   - 无需改动。已有的 `type` 字段（`sign`）天然区分类型\n   - 后续新增 `photo`、`diary`、`item` 等 type，解析时分流到 `inspect`\n\n#### 计划放置的可交互道具\n\n| 道具 | 位置 | type | 内容 |\n|------|------|------|------|\n| 村口告示牌 | 村庄入口附近 | sign | \"欢迎来到 Southland！这里是村长 HXY 的领地。\" |\n| 信箱 | 村长家门口 | item | 联系方式 / 邮箱 |\n| 花园石碑 | 花园区域 | sign | 喜欢的一句话 / 座右铭 |\n| 公告栏 | 村庄广场 | sign | 自我介绍 / 近况更新 |\n| 池塘边的石头 | 池塘旁 | sign | 一段随想或感悟 |\n\n**新增文件**：`src/ui/InspectPanel.ts`\n**修改文件**：`src/scenes/MainScene.ts`、`public/assets/maps/village.tmj`\n",
+  "github_issue_url": "https://github.com/hexueyuan/index/issues/7",
+  "github_repo": "hexueyuan/index",
+  "remote_branch": "main",
+  "local_branch": "feature-inspect-panel-intera",
+  "container_name": "feature-inspect-panel-intera",
+  "repo_root": "/Users/hexueyuan/Workroot/src/github.com/hexueyuan/index",
+  "worktree_path": "/Users/hexueyuan/Workroot/src/github.com/hexueyuan/index/.devpipe/worktrees/feature-inspect-panel-intera",
+  "docs_path": "/Users/hexueyuan/Workroot/src/github.com/hexueyuan/index/docs/devpipe/20260415-7-feature-inspect-panel-intera",
+  "created_at": "2026-04-15T20:43:48+08:00",
+  "stage_timestamps": {
+    "init": {
+      "started_at": "2026-04-15T20:43:48+08:00",
+      "ended_at": "2026-04-15T20:43:48+08:00"
+    },
+    "discuss": {
+      "started_at": "2026-04-15T12:45:03+00:00",
+      "ended_at": "2026-04-15T13:19:27+00:00"
+    },
+    "design": {
+      "started_at": "2026-04-15T13:19:42+00:00",
+      "ended_at": "2026-04-15T13:28:20+00:00"
+    },
+    "coding": {
+      "started_at": "2026-04-15T13:28:31+00:00",
+      "ended_at": "2026-04-15T13:33:34+00:00"
+    },
+    "review-and-fix": {
+      "started_at": "2026-04-15T13:33:49+00:00",
+      "ended_at": "2026-04-15T13:48:04+00:00"
+    },
+    "summarize": {
+      "started_at": "2026-04-15T13:48:04+00:00",
+      "ended_at": "2026-04-15T13:49:23+00:00"
+    }
+  },
+  "summary": "展示面板与交互类型分离"
+}
